@@ -1,0 +1,110 @@
+service: loan-eligibility-engine
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  environment:
+    BUCKET_NAME: ${self:custom.bucketName}
+    DB_HOST: ${env:DB_HOST}
+    DB_NAME: ${env:DB_NAME}
+    DB_USER: ${env:DB_USER}
+    DB_PASSWORD: ${env:DB_PASSWORD}
+    N8N_WEBHOOK_URL: ${env:N8N_WEBHOOK_URL}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+          Resource:
+            - arn:aws:s3:::${self:custom.bucketName}
+            - arn:aws:s3:::${self:custom.bucketName}/*
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: '*'
+
+custom:
+  bucketName: loan-eligibility-uploads-clickpe-${self:provider.stage}
+  pythonRequirements:
+    dockerizePip: true
+
+plugins:
+  - serverless-python-requirements
+
+functions:
+  presign:
+    handler: backend/presign/handler.generate_presigned_url
+    timeout: 10
+    memorySize: 128
+    url:
+      cors: true
+    environment:
+      BUCKET_NAME: ${self:custom.bucketName}
+  ingestion:
+    handler: backend/ingestion/handler.process_s3_event
+    timeout: 120
+    memorySize: 512
+    environment:
+      BUCKET_NAME: ${self:custom.bucketName}
+    events:
+      - s3:
+          bucket: ${self:custom.bucketName}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploads/
+
+# resources:
+#   Resources:
+#     UploadBucket:
+#       Type: AWS::S3::Bucket
+#       Properties:
+#         BucketName: ${self:custom.bucketName}
+#         PublicAccessBlockConfiguration:
+#           BlockPublicAcls: true
+#           BlockPublicPolicy: true
+#           IgnorePublicAcls: true
+#           RestrictPublicBuckets: true
+#         VersioningConfiguration:
+#           Status: Enabled
+#         CorsConfiguration:
+#           CorsRules:
+#             - AllowedHeaders: ['*']
+#               AllowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD']
+#               AllowedOrigins: ['*']
+#               MaxAgeSeconds: 3000
+#     BucketPolicy:
+#       Type: AWS::S3::BucketPolicy
+#       Properties:
+#         Bucket: !Ref UploadBucket
+#         PolicyDocument:
+#           Version: '2012-10-17'
+#           Statement:
+#             - Sid: EnforceTLS
+#               Effect: Deny
+#               Principal: '*'
+#               Action: s3:*
+#               Resource:
+#                 - arn:aws:s3:::${self:custom.bucketName}
+#                 - arn:aws:s3:::${self:custom.bucketName}/*
+#               Condition:
+#                 Bool:
+#                   aws:SecureTransport: 'false'
+
+outputs:
+  UploadBucketName:
+    Value: ${self:custom.bucketName}
+    Export:
+      Name: loan-eligibility-upload-bucket-${self:provider.stage}
+  PresignFunctionUrl:
+    Value: !GetAtt PresignUrl.FunctionUrl
+    Export:
+      Name: loan-eligibility-presign-url-${self:provider.stage}

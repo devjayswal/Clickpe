@@ -1,0 +1,112 @@
+#!/bin/bash
+# n8n Configuration Helper - Set up credentials and workflows
+
+echo "=== n8n Configuration Guide ==="
+echo ""
+echo "📍 n8n is running at: http://localhost:5678"
+echo ""
+
+# Check if n8n is accessible
+echo "Checking if n8n is running..."
+if curl -s http://localhost:5678 > /dev/null 2>&1; then
+    echo "✅ n8n is accessible!"
+else
+    echo "❌ n8n is not accessible. Start it with: sudo docker-compose up -d"
+    exit 1
+fi
+
+echo ""
+echo "=== Step 1: Configure PostgreSQL Credentials in n8n ==="
+echo ""
+echo "1. Open: http://localhost:5678"
+echo "2. Login to n8n"
+echo "3. Go to: Settings (⚙️) → Credentials"
+echo "4. Click: 'Add Credential'"
+echo "5. Search and select: 'Postgres'"
+echo "6. Fill in the following details:"
+echo ""
+echo "   Credential Name: PostgreSQL AWS RDS"
+echo "   Host: ""
+echo "   Database: "
+echo "   User: "
+echo "   Password: "
+echo "   Port: 5432"
+echo "   SSL: Disable"
+echo ""
+echo "7. Click: 'Create'"
+echo ""
+
+read -p "Press Enter when PostgreSQL credential is created..."
+
+echo ""
+echo "=== Step 2: Configure AWS SES Credentials in n8n ==="
+echo ""
+echo "1. In n8n, go to: Settings (⚙️) → Credentials"
+echo "2. Click: 'Add Credential'"
+echo "3. Search and select: 'AWS'"
+echo "4. Fill in the following details:"
+echo ""
+echo "   Credential Name: AWS SES Mumbai"
+echo "   Region: ap-south-1"
+echo "   Access Key ID: AKIAXOOZARVH4566ZQ7B"
+echo "   Secret Access Key: 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"
+echo ""
+echo "5. Click: 'Create'"
+echo ""
+
+read -p "Press Enter when AWS credential is created..."
+
+echo ""
+echo "=== Step 3: Import/Update Workflows ==="
+echo ""
+echo "Updated workflow files are in: n8n/workflows/"
+echo ""
+echo "For each workflow (A, B, C):"
+echo "1. In n8n, go to: Workflows"
+echo "2. If workflow exists:"
+echo "   - Open it"
+echo "   - Click: ⋮ (three dots) → Delete"
+echo "3. Click: 'Import from File'"
+echo "4. Select workflow file:"
+echo "   - workflow-a-crawler.json"
+echo "   - workflow-b-matcher.json"
+echo "   - workflow-c-notifications.json"
+echo "5. After import, for each Postgres node:"
+echo "   - Click the node"
+echo "   - Select credential: 'PostgreSQL AWS RDS'"
+echo "6. For AWS SES node (in Workflow C):"
+echo "   - Click the 'AWS SES - Send Email' node"
+echo "   - Select credential: 'AWS SES Mumbai'"
+echo "   - Verify 'From Email': devjayswal404@gmail.com"
+echo "7. Click: 'Save'"
+echo "8. Toggle: 'Active' (turn on the workflow)"
+echo ""
+
+read -p "Press Enter when all workflows are imported and activated..."
+
+echo ""
+echo "=== Step 4: Test Workflow C Webhook ==="
+echo ""
+echo "Testing webhook endpoint..."
+WEBHOOK_URL="http://localhost:5678/webhook/notify"
+
+curl -X POST "$WEBHOOK_URL" \
+  -H "Content-Type: application/json" \
+  -d '{"test": true}' 2>&1
+
+echo ""
+echo ""
+echo "✅ Configuration complete!"
+echo ""
+echo "=== Summary ==="
+echo "✓ PostgreSQL credentials configured"
+echo "✓ AWS SES credentials configured"
+echo "✓ Workflows imported and activated"
+echo "✓ Sender email: devjayswal404@gmail.com"
+echo "✓ Verified recipient emails: devjayswal404@gmail.com, rdssjayswal@gmail.com"
+echo ""
+echo "=== Next Steps ==="
+echo "1. Run Workflow A manually to populate loan products"
+echo "2. Upload users.csv via UI to trigger the pipeline"
+echo "3. Check your Gmail inbox for loan match notifications!"
+echo ""

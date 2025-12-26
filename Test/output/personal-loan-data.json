@@ -1,0 +1,178 @@
+{
+  "url": "https://www.bankbazaar.com/personal-loan.html?WT.mc_id=SEO_NEW_GATEWAY_PLSTACK_DSK&utm_source=bb&utm_medium=seo&utm_campaign=SEO_NEW_GATEWAY_PLSTACK_DSK",
+  "scrapedAt": "2025-12-09T05:03:13.522Z",
+  "lenderCount": 19,
+  "lenders": [
+    {
+      "productName": "MyShubhLife",
+      "interestRate": "10.25%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": null,
+      "minimumAge": "21 years",
+      "rawText": "MyShubhLife Tata Capital Home Credit Kotak Mahindra Ujjivan Small Finance Bank Ltd InCred Edelweiss Salaried Personal Loan Standard Chartered Bank YES"
+    },
+    {
+      "productName": "HDFC Bank Personal Loan",
+      "interestRate": "10.85%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹40L",
+      "minimumAge": "21 years",
+      "rawText": "HDFC Bank Personal Loan Loan Amount : Up to ₹40L Fixed : 10.85% - 21.00% Tenure : 1 - 5 Years Processing Fee : ₹ 4,999 Apply Now Explore See More Loan"
+    },
+    {
+      "productName": "IndusInd Bank Personal Loan",
+      "interestRate": "10.49%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹50L",
+      "minimumAge": "21 years",
+      "rawText": "IndusInd Bank Personal Loan Loan Amount : Up to ₹50L Fixed : 10.49% Tenure : 5 Years Processing Fee : Up to 3.00% Apply Now Explore See More Instant D"
+    },
+    {
+      "productName": "TurboLoan powered by Chola",
+      "interestRate": "10.25%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "₹1L",
+      "minimumAge": "21 years",
+      "rawText": "TurboLoan powered by Chola Loan Amount : ₹1L -₹3L Fixed : 10.25% - 34.05% Tenure : Up to 3 Years Processing Fee : 3.00% Apply Now Explore See More Ins"
+    },
+    {
+      "productName": "MyShubhLife",
+      "interestRate": "24.00%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "550+",
+      "loanAmount": "₹75K",
+      "minimumAge": "21 years",
+      "rawText": "MyShubhLife Loan Amount : ₹75K -₹5L Fixed : 24.00% - 32.00% Tenure : 1 - 4 Years Processing Fee : 3.00% Apply Now Explore See More Zero Processing Fee"
+    },
+    {
+      "productName": "Tata Capital Personal Loan",
+      "interestRate": "11.99%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹35L",
+      "minimumAge": "21 years",
+      "rawText": "Tata Capital Personal Loan Loan Amount : Up to ₹35L Fixed : 11.99% - 29.99% Tenure : 6 Years Processing Fee : Up to 3.00% Apply Now Explore See More I"
+    },
+    {
+      "productName": "HOME CREDIT",
+      "interestRate": "19.20%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "600+",
+      "loanAmount": "Up to ₹5L",
+      "minimumAge": "21 years",
+      "rawText": "HOME CREDIT Loan Amount : Up to ₹5L Floating : 19.20% Tenure : 4 Years Processing Fee : 2.50% - 5.00% Apply Now Explore See More Interest Rate From Ju"
+    },
+    {
+      "productName": "Kotak Mahindra Bank Personal Loan",
+      "interestRate": "10.99%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹40L",
+      "minimumAge": "21 years",
+      "rawText": "Kotak Mahindra Bank Personal Loan Loan Amount : Up to ₹40L Fixed : 10.99% - 16.99% Tenure : 5 Years Processing Fee : 3.00% Apply Now Explore See More "
+    },
+    {
+      "productName": "Ujjivan Small Finance Bank",
+      "interestRate": "11.49%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹30L",
+      "minimumAge": "21 years",
+      "rawText": "Ujjivan Small Finance Bank Loan Amount : Up to ₹30L Fixed : 11.49% - 16.49% Tenure : 3 Years Processing Fee : 2.00% Apply Now Explore See More No Cred"
+    },
+    {
+      "productName": "InCred Personal Loan",
+      "interestRate": "13.99%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "650+",
+      "loanAmount": "₹50K",
+      "minimumAge": "21 years",
+      "rawText": "InCred Personal Loan Loan Amount : ₹50K -₹7.5L Fixed : 13.99% Tenure : 1 - 4 Years Processing Fee : 2.00% - 5.00% Apply Now Explore See More Loan Up T"
+    },
+    {
+      "productName": "Edelweiss Salaried Personal Loan",
+      "interestRate": "25.00%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "550+",
+      "loanAmount": "Up to ₹20L",
+      "minimumAge": "21 years",
+      "rawText": "Edelweiss Salaried Personal Loan Loan Amount : Up to ₹20L Fixed : 25.00% Tenure : 4 Years Processing Fee : 2.00% Apply Now Explore See More No Income "
+    },
+    {
+      "productName": "Standard Chartered Bank",
+      "interestRate": "11.49%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "₹1L",
+      "minimumAge": "21 years",
+      "rawText": "Standard Chartered Bank Loan Amount : ₹1L -₹6L Fixed : 11.49% Tenure : 5 Years Processing Fee : 2.25% Apply Now Explore See More Balance Transfer Yes "
+    },
+    {
+      "productName": "Yes Bank Personal Loan",
+      "interestRate": "11.25%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹40L",
+      "minimumAge": "21 years",
+      "rawText": "Yes Bank Personal Loan Loan Amount : Up to ₹40L Fixed : 11.25% - 21.00% Tenure : 5 Years Processing Fee : 2.50% Apply Now Explore See More Balance Tra"
+    },
+    {
+      "productName": "HDBFS Personal Loan",
+      "interestRate": "19.10%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "600+",
+      "loanAmount": "Up to ₹20L",
+      "minimumAge": "21 years",
+      "rawText": "HDBFS Personal Loan Loan Amount : Up to ₹20L Fixed : 19.10% Tenure : 5 Years Processing Fee : Up to 2.00% Apply Now Explore See More Zero Part Payment"
+    },
+    {
+      "productName": "Aditya Birla Capital Personal Loan",
+      "interestRate": "10.99%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹50L",
+      "minimumAge": "21 years",
+      "rawText": "Aditya Birla Capital Personal Loan Loan Amount : Up to ₹50L Fixed : 10.99% Tenure : 7 Years Processing Fee : 3.00% Apply Now Explore See More Zero Pre"
+    },
+    {
+      "productName": "India Infoline Finance Ltd",
+      "interestRate": "12.75%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "650+",
+      "loanAmount": "Up to ₹5L",
+      "minimumAge": "21 years",
+      "rawText": "India Infoline Finance Ltd. Personal Loan Loan Amount : Up to ₹5L Fixed : 12.75% - 44.00% Tenure : 4 Years Processing Fee : 2.00% - 6.00% Apply Now Ex"
+    },
+    {
+      "productName": "IDFC First Bank Personal Loan",
+      "interestRate": "10.99%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": "Up to ₹5L",
+      "minimumAge": "21 years",
+      "rawText": "IDFC First Bank Personal Loan Loan Amount : Up to ₹5L Fixed : 10.99% Tenure : 1 - 5 Years Processing Fee : Up to 3.50% Apply Now Explore See Less Fees"
+    },
+    {
+      "productName": "Yes Bank Personal Loan",
+      "interestRate": "10.85%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": null,
+      "minimumAge": "21 years",
+      "rawText": "Yes Bank Personal Loan 10.85% p.a. to 21% p.a. Up to Rs.40 lakhs Union Bank of India Personal Loan 10.75% p.a. onwards Up to Rs.15 lakhs Axis Bank Per"
+    },
+    {
+      "productName": "HDBFS Personal Loan",
+      "interestRate": "10.60%",
+      "minimumIncomeRequired": null,
+      "minimumCreditScoreNeeded": "720+",
+      "loanAmount": null,
+      "minimumAge": "21 years",
+      "rawText": "HDBFS Personal Loan Contact the Bank Up to Rs.20 lakhs PNB Personal Loan 10.60% p.a. onwards Contact the Bank IndusInd Bank Personal Loan 10.49% p.a. "
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "name": "Workflow C - User Notifications (Email via SES)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "notify",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "host": "={{ $env.DB_HOST }}",
+        "database": "={{ $env.DB_NAME }}",
+        "user": "={{ $env.DB_USER }}",
+        "password": "={{ $env.DB_PASSWORD }}",
+        "port": 5432,
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT u.user_id, u.name, u.email FROM matches m JOIN users u ON m.user_id = u.user_id WHERE m.created_at > NOW() - INTERVAL '10 minutes' AND (u.email LIKE '%gmail.com' OR u.email NOT LIKE '%example.com') ORDER BY u.user_id;"
+      },
+      "name": "Postgres - Fetch Users with New Matches",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        500,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "PostgreSQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "javaScriptCode": "// For each user, fetch their matched products\nconst users = items;\nconst results = [];\n\nfor (const user of users) {\n  // Store user_id separately to avoid SQL injection\n  results.push({\n    user_id: user.user_id,\n    email: user.email,\n    name: user.name,\n    query: `SELECT m.product_id, p.product_name, p.interest_rate, p.lender_name, m.match_score, m.match_reason FROM matches m JOIN loan_products p ON m.product_id = p.product_id WHERE m.user_id = '${user.user_id}'::uuid AND m.created_at > NOW() - INTERVAL '10 minutes' ORDER BY m.match_score DESC;`\n  });\n}\n\nreturn results;"
+      },
+      "name": "Function - Prepare User-Product Queries",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "host": "={{ $env.DB_HOST }}",
+        "database": "={{ $env.DB_NAME }}",
+        "user": "={{ $env.DB_USER }}",
+        "password": "={{ $env.DB_PASSWORD }}",
+        "port": 5432,
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}"
+      },
+      "name": "Postgres - Fetch Matched Products Per User",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        900,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "PostgreSQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "javaScriptCode": "// Construct personalized email body\nconst user = items[0];\nconst products = items.slice(1); // Remaining items are products\n\nlet htmlBody = `<h2>Hello ${user.name},</h2>\n<p>Good news! You may be eligible for the following loan products:</p>\n<table border=\\\"1\\\" cellpadding=\\\"10\\\" style=\\\"border-collapse: collapse; width: 100%;\\\">`;\n\nhtmlBody += `<tr style=\\\"background-color: #f2f2f2;\\\">\n  <th>Product Name</th>\n  <th>Lender</th>\n  <th>Interest Rate</th>\n  <th>Match Score</th>\n</tr>`;\n\nfor (const product of products) {\n  const matchPercent = Math.round((product.match_score || 0.85) * 100);\n  htmlBody += `<tr>\n    <td><strong>${product.product_name || 'N/A'}</strong></td>\n    <td>${product.lender_name || 'N/A'}</td>\n    <td>${product.interest_rate || 'N/A'}%</td>\n    <td>${matchPercent}%</td>\n  </tr>`;\n}\n\nhtmlBody += `</table>\n<br/>\n<p>${products.length} loan product(s) matched your profile based on income, credit score, and eligibility criteria.</p>\n<p><a href=\\\"https://example.com/loans\\\" style=\\\"background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\\\">View All Matched Products</a></p>\n<p style=\\\"color: #666; font-size: 12px;\\\">This is an automated message. Please do not reply to this email.</p>`;\n\nreturn [{\n  email: user.email,\n  name: user.name,\n  htmlBody: htmlBody,\n  subject: `Your Personalized Loan Matches - ${products.length} Products Available`\n}];"
+      },
+      "name": "Function - Compose Email",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "credentials": "aws",
+        "fromEmail": "devjayswal404@gmail.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "body": "={{ $json.htmlBody }}",
+        "isBodyHtml": true,
+        "additionalFields": {}
+      },
+      "name": "AWS SES - Send Email",
+      "type": "n8n-nodes-base.awsSes",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        300
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "host": "={{ $env.DB_HOST }}",
+        "database": "={{ $env.DB_NAME }}",
+        "user": "={{ $env.DB_USER }}",
+        "password": "={{ $env.DB_PASSWORD }}",
+        "port": 5432,
+        "operation": "insert",
+        "table": "notifications",
+        "columns": "user_email,notification_type,status,sent_at",
+        "additionalFields": {
+          "mode": "independently"
+        }
+      },
+      "name": "Postgres - Log Notification Sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        1500,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "PostgreSQL account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Fetch Users with New Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Fetch Users with New Matches": {
+      "main": [
+        [
+          {
+            "node": "Function - Prepare User-Product Queries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Prepare User-Product Queries": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Fetch Matched Products Per User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Fetch Matched Products Per User": {
+      "main": [
+        [
+          {
+            "node": "Function - Compose Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Compose Email": {
+      "main": [
+        [
+          {
+            "node": "AWS SES - Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS SES - Send Email": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Log Notification Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

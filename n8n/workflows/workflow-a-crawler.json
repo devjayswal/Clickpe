@@ -1,0 +1,79 @@
+{
+  "name": "Workflow A - Loan Product Discovery (Mock Crawler)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "type": "hours",
+              "value": 24
+            }
+          ]
+        }
+      },
+      "name": "Cron Trigger (Daily)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "javaScriptCode": "const { execSync } = require('child_process');\nconst fs = require('fs');\n\ntry {\n  execSync('node /home/era/Desktop/Work/Clickpe/Test/TestScarpper.js', {\n    cwd: '/home/era/Desktop/Work/Clickpe',\n    encoding: 'utf8'\n  });\n\n  const jsonPath = '/home/era/Desktop/Work/Clickpe/Test/output/personal-loan-data.json';\n  const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));\n  \n  const parseLoanAmount = (amountStr) => {\n    if (!amountStr || amountStr === 'null' || amountStr === null) return { min: 100000, max: 5000000 };\n    const matches = amountStr.match(/₹([0-9.]+)([LKM]?)/gi);\n    if (!matches) return { min: 100000, max: 5000000 };\n    \n    const parseValue = (val) => {\n      val = val.replace('₹', '').replace(/,/g, '').toUpperCase();\n      if (val.includes('L')) return parseInt(val) * 100000;\n      if (val.includes('K')) return parseInt(val) * 1000;\n      if (val.includes('M')) return parseInt(val) * 1000000;\n      return parseInt(val);\n    };\n    \n    if (amountStr.includes('Up to')) {\n      const max = parseValue(matches[0]);\n      return { min: Math.round(max * 0.5), max: max };\n    }\n    return { min: parseValue(matches[0]), max: parseValue(matches[0]) * 2 };\n  };\n\n  const products = jsonData.lenders.map((item, index) => {\n    const interestRate = parseFloat((item.interestRate || '0%').replace('%', ''));\n    const minIncome = (item.minimumIncomeRequired && item.minimumIncomeRequired !== null) ? parseInt(item.minimumIncomeRequired) : 50000;\n    const creditScoreStr = (item.minimumCreditScoreNeeded || '600+').replace('+', '');\n    const minCreditScore = parseInt(creditScoreStr) || 600;\n    \n    let maxCreditScore = 850;\n    if (minCreditScore >= 750) maxCreditScore = 850;\n    else if (minCreditScore >= 720) maxCreditScore = 800;\n    else if (minCreditScore >= 650) maxCreditScore = 780;\n    else if (minCreditScore >= 600) maxCreditScore = 750;\n    else maxCreditScore = 700;\n    \n    const ageStr = (item.minimumAge || '21 years').match(/\\d+/);\n    const minAge = ageStr ? parseInt(ageStr[0]) : 21;\n    const loanAmounts = parseLoanAmount(item.loanAmount);\n    \n    return {\n      product_id: 'prod-' + index + '-' + Date.now(),\n      product_name: item.productName || 'Unknown Product',\n      lender_name: (item.productName || 'Unknown').split(' ')[0],\n      interest_rate: interestRate,\n      min_monthly_income: minIncome,\n      max_monthly_income: minIncome * 10,\n      min_credit_score: minCreditScore,\n      max_credit_score: maxCreditScore,\n      allowed_employment_status: ['Salaried', 'Self-Employed'],\n      min_age: minAge,\n      max_age: 65,\n      loan_amount_min: loanAmounts.min,\n      loan_amount_max: loanAmounts.max,\n      tenure_months: 60,\n      description: 'Personal loan from ' + item.productName + ' at ' + item.interestRate + ' interest rate',\n      source_url: 'https://www.bankbazaar.com/personal-loan.html'\n    };\n  });\n\n  const values = products.map(p => {\n    const employment = \"ARRAY['\" + p.allowed_employment_status.join(\"','\") + \"']\";\n    const desc = (p.description || '').replace(/'/g, \"''\");\n    const name = (p.product_name || '').replace(/'/g, \"''\");\n    const lender = (p.lender_name || '').replace(/'/g, \"''\");\n    return '(' + [p.product_id, name, lender, p.interest_rate, p.min_monthly_income, p.max_monthly_income, p.min_credit_score, p.max_credit_score, employment, p.min_age, p.max_age, p.loan_amount_min, p.loan_amount_max, p.tenure_months, desc, p.source_url].map((v, i) => i === 8 ? v : \"'\" + v + \"'\").join(', ') + ')';\n  }).join(',\\n');\n\n  const query = 'INSERT INTO loan_products (product_id, product_name, lender_name, interest_rate, min_monthly_income, max_monthly_income, min_credit_score, max_credit_score, allowed_employment_status, min_age, max_age, loan_amount_min, loan_amount_max, tenure_months, description, source_url) VALUES ' + values + ' ON CONFLICT (product_id) DO UPDATE SET product_name = EXCLUDED.product_name, interest_rate = EXCLUDED.interest_rate, last_updated = NOW();';\n  \n  return [{ json: { query: query, products: products, count: products.length } }];\n} catch (error) {\n  return [{ json: { error: error.message, stack: error.stack } }];\n}"
+      },
+      "name": "Function - Execute BankBazaar Scraper",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}"
+      },
+      "name": "Postgres - Upsert Loan Products",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        700,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "Postgres account",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron Trigger (Daily)": {
+      "main": [
+        [
+          {
+            "node": "Function - Execute BankBazaar Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Execute BankBazaar Scraper": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Upsert Loan Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

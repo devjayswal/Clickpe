@@ -1,0 +1,35 @@
+{
+  "name": "loan-eligibility-engine",
+  "version": "1.0.0",
+  "description": "Automated loan eligibility matching system with n8n orchestration",
+  "main": "backend/ingestion/handler.py",
+  "scripts": {
+    "deploy": "serverless deploy --stage dev --region us-east-1",
+    "deploy:prod": "serverless deploy --stage prod --region us-east-1",
+    "logs": "serverless logs -f ingestion --stage dev",
+    "invoke:presign": "serverless invoke local -f presign --stage dev",
+    "remove": "serverless remove --stage dev --region us-east-1",
+    "test:email": "node Test/sendMail.js"
+  },
+  "keywords": [
+    "loan",
+    "eligibility",
+    "matching",
+    "aws",
+    "lambda",
+    "n8n",
+    "serverless"
+  ],
+  "author": "Clickpe",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^3.26.0",
+    "serverless-python-requirements": "^6.1.0"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1400.0",
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3",
+    "puppeteer": "^24.32.0"
+  }
+}

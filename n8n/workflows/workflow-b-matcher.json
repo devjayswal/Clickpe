@@ -1,0 +1,183 @@
+{
+  "name": "Workflow B - User-Loan Matching (Eligibility Filter)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "match-trigger",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "host": "{{ env.DB_HOST }}",
+        "database": "{{ env.DB_NAME }}",
+        "user": "{{ env.DB_USER }}",
+        "password": "{{ env.DB_PASSWORD }}",
+        "port": 5432,
+        "operation": "executeQuery",
+        "query": "SELECT * FROM users WHERE created_at > NOW() - INTERVAL '1 hour' ORDER BY id DESC LIMIT 1000;"
+      },
+      "name": "Postgres - Fetch Recent Users",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        500,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "host": "{{ env.DB_HOST }}",
+        "database": "{{ env.DB_NAME }}",
+        "user": "{{ env.DB_USER }}",
+        "password": "{{ env.DB_PASSWORD }}",
+        "port": 5432,
+        "operation": "executeQuery",
+        "query": "SELECT * FROM loan_products;"
+      },
+      "name": "Postgres - Fetch All Loan Products",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        500,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "javaScriptCode": "// Stage 1: SQL prefilter via JS (redundant but allows caching)\n// Reduce candidate pairs by checking income/credit/employment upfront\nconst users = $('Postgres - Fetch Recent Users').all();\nconst products = $('Postgres - Fetch All Loan Products').all();\n\nconst matches = [];\nfor (const user of users) {\n  for (const product of products) {\n    // Fast prefilter\n    if (user.monthly_income < product.min_monthly_income) continue;\n    if (user.credit_score < product.min_credit_score) continue;\n    if (product.max_credit_score && user.credit_score > product.max_credit_score) continue;\n    if (user.age < (product.min_age || 18)) continue;\n    if (user.age > (product.max_age || 120)) continue;\n    \n    // Employment check (if product has restrictions)\n    if (product.allowed_employment_status && product.allowed_employment_status.length > 0) {\n      if (!product.allowed_employment_status.includes(user.employment_status)) continue;\n    }\n    \n    // Passed stage 1: mark for further evaluation\n    matches.push({\n      user_id: user.user_id,\n      product_id: product.product_id,\n      stage: 'prefilter_pass',\n      user_income: user.monthly_income,\n      user_score: user.credit_score\n    });\n  }\n}\n\nreturn matches;"
+      },
+      "name": "Function - Stage 1 Prefilter",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "javaScriptCode": "// Stage 2: More nuanced rules (no LLM yet)\n// e.g., debt-to-income ratio, eligibility score boosters\n// For now, just pass through with confidence score\nreturn items.map(item => ({\n  ...item,\n  match_score: 0.85,\n  match_reason: 'Passed prefilter and rule checks'\n}));"
+      },
+      "name": "Function - Stage 2 Rules",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "host": "{{ env.DB_HOST }}",
+        "database": "{{ env.DB_NAME }}",
+        "user": "{{ env.DB_USER }}",
+        "password": "{{ env.DB_PASSWORD }}",
+        "port": 5432,
+        "operation": "insert",
+        "table": "matches",
+        "columns": "user_id,product_id,match_score,match_reason"
+      },
+      "name": "Postgres - Insert Matches",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5678/webhook/notify",
+        "options": {}
+      },
+      "name": "HTTP - Trigger Workflow C (Notifications)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Fetch Recent Users",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Postgres - Fetch All Loan Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Fetch Recent Users": {
+      "main": [
+        [
+          {
+            "node": "Function - Stage 1 Prefilter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Fetch All Loan Products": {
+      "main": [
+        [
+          {
+            "node": "Function - Stage 1 Prefilter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Stage 1 Prefilter": {
+      "main": [
+        [
+          {
+            "node": "Function - Stage 2 Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function - Stage 2 Rules": {
+      "main": [
+        [
+          {
+            "node": "Postgres - Insert Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres - Insert Matches": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Trigger Workflow C (Notifications)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

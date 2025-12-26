@@ -1,0 +1,24 @@
+FROM n8nio/n8n:1.71.0
+
+USER root
+
+# Install Chromium for Puppeteer
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    nodejs \
+    yarn
+
+# Set Puppeteer to use installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Copy package.json and install dependencies
+COPY package.json /home/node/package.json
+RUN cd /home/node && npm install
+
+USER node
